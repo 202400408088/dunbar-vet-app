@@ -1,0 +1,16 @@
+{
+  "appName": "Dunbar Vet Clinic Appointment System",
+  "version": "1.0.0",
+  "environment": "development",
+  "storage": {
+    "key": "dunbar-vet-app-data"
+  },
+  "clinic": {
+    "defaultInClinicDurationMin": 15,
+    "openHour": 8,
+    "closeHour": 18
+  },
+  "features": {
+    "allowCancelAppointment": true
+  }
+}
