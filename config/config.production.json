@@ -1,0 +1,22 @@
+{
+  "appName": "Dunbar Vet Clinic Appointment System",
+  "version": "1.0.0",
+  "environment": "production",
+  "storage": {
+    "key": "dunbar-vet-app-data"
+  },
+  "clinic": {
+    "defaultInClinicDurationMin": 15,
+    "openHour": 8,
+    "closeHour": 18
+  },
+  "features": {
+    "allowCancelAppointment": true
+  },
+  "deployment": {
+    "host": "GitHub Pages",
+    "baseUrl": "https://<your-username>.github.io/dunbar-vet-app/",
+    "branch": "main",
+    "domain": null
+  }
+}
