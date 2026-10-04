@@ -1,0 +1,178 @@
+/* Dunbar Vet Clinic - Appointment System styles */
+
+:root {
+  --primary: #1f6f78;
+  --primary-dark: #174f56;
+  --accent: #e09f3e;
+  --bg: #f4f7f8;
+  --card: #ffffff;
+  --text: #22333b;
+  --muted: #6b7a80;
+  --border: #dbe4e6;
+  --danger: #c0392b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.app-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-header h1 { font-size: 1.4rem; }
+.tagline { font-size: 0.85rem; opacity: 0.9; }
+
+.env-badge {
+  background: var(--accent);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--primary-dark);
+  padding: 0 16px;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  color: #dfeef0;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.tab.active { background: var(--bg); color: var(--primary); font-weight: bold; }
+
+main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.panel h2 { margin-bottom: 12px; color: var(--primary-dark); }
+
+.panel-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: #e3eaec; color: var(--text); }
+.btn-danger { background: var(--danger); color: #fff; }
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-value { display: block; font-size: 2rem; font-weight: bold; color: var(--primary); }
+.stat-label { color: var(--muted); font-size: 0.85rem; }
+
+.form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.form-card h3 { margin-bottom: 12px; }
+
+.form-card label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.form-card input,
+.form-card select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.form-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+.list { display: flex; flex-direction: column; gap: 8px; }
+
+.list-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-item .item-title { font-weight: bold; }
+.list-item .item-sub { color: var(--muted); font-size: 0.85rem; }
+.list-item .item-actions { display: flex; gap: 6px; }
+.list-item.farm { border-left-color: var(--accent); }
+.list-item.cancelled { opacity: 0.55; border-left-color: var(--danger); }
+
+.empty { color: var(--muted); text-align: center; padding: 24px; }
+
+.tag {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e6f2f3;
+  color: var(--primary);
+}
+
+.app-footer {
+  max-width: 960px;
+  margin: 24px auto;
+  padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.hidden { display: none; }

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dunbar Vet Clinic - Appointment System</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <h1>Dunbar Veterinary Clinic</h1>
+      <p class="tagline">Appointment Management System</p>
+    </div>
+    <div class="env-badge" id="env-badge">dev</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="dashboard">Dashboard</button>
+    <button class="tab" data-tab="customers">Customers</button>
+    <button class="tab" data-tab="appointments">Appointments</button>
+  </nav>
+
+  <main>
+    <!-- Dashboard -->
+    <section id="dashboard" class="panel active">
+      <h2>Today's Summary</h2>
+      <div class="stat-cards">
+        <div class="stat-card">
+          <span class="stat-value" id="stat-customers">0</span>
+          <span class="stat-label">Customers</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-appointments">0</span>
+          <span class="stat-label">Total Appointments</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-inclinic">0</span>
+          <span class="stat-label">In-Clinic</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-farm">0</span>
+          <span class="stat-label">Farm Visits</span>
+        </div>
+      </div>
+      <h3>Appointments for Today</h3>
+      <div id="today-list" class="list"></div>
+    </section>
+
+    <!-- Customers -->
+    <section id="customers" class="panel">
+      <div class="panel-toolbar">
+        <h2>Customers</h2>
+        <button class="btn btn-primary" id="btn-add-customer">+ New Customer</button>
+      </div>
+      <div id="customer-form" class="form-card hidden">
+        <h3 id="customer-form-title">New Customer</h3>
+        <input type="hidden" id="customer-id" />
+        <label>Full Name<input type="text" id="customer-name" placeholder="e.g. Jane Smith" /></label>
+        <label>Phone<input type="tel" id="customer-phone" placeholder="e.g. 0400 123 456" /></label>
+        <label>Email (optional)<input type="email" id="customer-email" placeholder="e.g. jane@email.com" /></label>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="btn-save-customer">Save</button>
+          <button class="btn btn-secondary" id="btn-cancel-customer">Cancel</button>
+        </div>
+      </div>
+      <div id="customer-list" class="list"></div>
+    </section>
+
+    <!-- Appointments -->
+    <section id="appointments" class="panel">
+      <div class="panel-toolbar">
+        <h2>Appointments</h2>
+        <button class="btn btn-primary" id="btn-add-appointment">+ New Appointment</button>
+      </div>
+      <div id="appointment-form" class="form-card hidden">
+        <h3 id="appointment-form-title">New Appointment</h3>
+        <input type="hidden" id="appointment-id" />
+        <label>Customer<select id="appointment-customer"></select></label>
+        <label>Type
+          <select id="appointment-type">
+            <option value="in-clinic">In-Clinic Consultation (15 min)</option>
+            <option value="farm-visit">Farm Visit (scheduled duration)</option>
+          </select>
+        </label>
+        <label>Date<input type="date" id="appointment-date" /></label>
+        <label>Time<input type="time" id="appointment-time" /></label>
+        <label>Duration (minutes)<input type="number" id="appointment-duration" value="15" min="5" step="5" /></label>
+        <label>Notes<input type="text" id="appointment-notes" placeholder="Optional notes / property location" /></label>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="btn-save-appointment">Save</button>
+          <button class="btn btn-secondary" id="btn-cancel-appointment">Cancel</button>
+        </div>
+      </div>
+      <div id="appointment-list" class="list"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span id="footer-version">Version 1.0.0</span>
+    <span>Dunbar Vet Clinic Appointment System</span>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/customers.js"></script>
+  <script src="js/appointments.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
