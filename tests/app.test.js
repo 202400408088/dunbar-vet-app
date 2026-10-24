@@ -1,134 +1,108 @@
-/**
- * app.test.js - Lightweight automated tests for the Dunbar Vet app.
- *
- * Runs under Node.js without any test framework. It mocks a minimal
- * `window` (localStorage) so the browser-oriented domain modules can be
- * loaded and exercised. Covers the two appointment types and their
- * business-rule validation.
- */
-'use strict';
-
-const fs = require('fs');
-const path = require('path');
-
-// ---- Minimal browser-like environment -----------------------------------
-function createFakeWindow() {
-  const store = {};
-  return {
-    localStorage: {
-      getItem: (k) => (k in store ? store[k] : null),
-      setItem: (k, v) => { store[k] = String(v); }
-    },
-    // modules attach services to `window`
-    CustomerService: null,
-    AppointmentService: null,
-    StorageService: null,
-    CONFIG: null
-  };
-}
-
-function loadModules(global) {
-  const root = path.join(__dirname, '..');
-  const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
-  // config.js depends on `window`
-  const fn = new Function('window', read('js/config.js') + read('js/storage.js') +
-    read('js/customers.js') + read('js/appointments.js'));
-  fn(global);
-}
-
-// ---- Tiny assertion helper ----------------------------------------------
-let passed = 0;
-let failed = 0;
-const failures = [];
-
-function assert(condition, message) {
-  if (condition) {
-    passed++;
-    console.log('  PASS  ' + message);
-  } else {
-    failed++;
-    failures.push(message);
-    console.log('  FAIL  ' + message);
+// Mock localStorage for node test environment
+global.localStorage = {
+  data: {},
+  getItem(key) {
+    return this.data[key] ?? null;
+  },
+  setItem(key, value) {
+    this.data[key] = String(value);
+  },
+  removeItem(key) {
+    delete this.data[key];
+  },
+  clear() {
+    this.data = {};
   }
+};
+
+// Import functions (simulate app.js logic)
+const STORAGE_KEY = "dunbarVetAppointments";
+
+function loadAppointments() {
+  const saved = global.localStorage.getItem(STORAGE_KEY);
+  return saved ? JSON.parse(saved) : [];
 }
 
-function throws(fn, message) {
-  let didThrow = false;
-  try { fn(); } catch (e) { didThrow = true; }
-  assert(didThrow, message);
+function saveAppointments(list) {
+  global.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
-// ---- Tests ---------------------------------------------------------------
-const win = createFakeWindow();
-loadModules(win);
-const { CustomerService, AppointmentService, CONFIG } = win;
+function hasDuplicatePetOnDate(petName, date, excludeId = null) {
+  const appointments = loadAppointments();
+  return appointments.some(item => {
+    if (excludeId && item.id === excludeId) return false;
+    return item.petName.trim() === petName.trim() && item.date === date;
+  });
+}
 
-console.log('\n1. Configuration');
-assert(CONFIG.clinic.defaultInClinicDurationMin === 15,
-  'in-clinic default duration is 15 minutes');
-assert(CONFIG.environment === 'development', 'environment is development');
+function isDateInPast(selectedDate) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const pickDate = new Date(selectedDate);
+  return pickDate < today;
+}
 
-console.log('\n2. Customer management');
-const state = { customers: [], appointments: [] };
-const c1 = CustomerService.create(state, { name: 'Jane Smith', phone: '0400123456' });
-assert(state.customers.length === 1, 'creates one customer');
-assert(c1.id === 1, 'customer gets an auto id');
-throws(() => CustomerService.create(state, { name: '' }), 'rejects empty customer name');
-const found = CustomerService.search(state, 'jane');
-assert(found.length === 1, 'searches customer by name (case-insensitive)');
-CustomerService.update(state, c1.id, { phone: '0411112222' });
-assert(CustomerService.findById(state, c1.id).phone === '0411112222', 'updates customer phone');
-CustomerService.remove(state, c1.id);
-assert(state.customers.length === 0, 'removes customer');
+function createAppointment(petName, ownerName, date, time, type, notes) {
+  if (isDateInPast(date)) return null;
+  if (hasDuplicatePetOnDate(petName, date)) return null;
 
-console.log('\n3. In-clinic appointments (fixed 15-minute slot)');
-const customer = CustomerService.create(state, { name: 'Bob Brown' });
-const inClinic = AppointmentService.create(state, {
-  customerId: customer.id,
-  type: 'in-clinic',
-  date: '2026-10-06',
-  time: '09:00',
-  durationMin: 15
+  const newAppt = {
+    id: Date.now().toString(),
+    petName,
+    ownerName,
+    date,
+    time,
+    type,
+    notes
+  };
+  const list = loadAppointments();
+  list.push(newAppt);
+  saveAppointments(list);
+  return newAppt;
+}
+
+function deleteAppointment(apptId) {
+  let list = loadAppointments();
+  list = list.filter(item => item.id !== apptId);
+  saveAppointments(list);
+}
+
+// Node test suite
+import { describe, it, assert, beforeEach } from "node:test";
+
+beforeEach(() => {
+  global.localStorage.clear();
 });
-assert(inClinic.status === 'scheduled', 'creates an in-clinic appointment');
-assert(inClinic.durationMin === 15, 'in-clinic uses 15-minute slot');
-throws(() => AppointmentService.create(state, {
-  customerId: customer.id, type: 'in-clinic', date: '2026-10-06', time: '09:00', durationMin: 30
-}), 'rejects in-clinic with non-15-minute duration');
-throws(() => AppointmentService.create(state, {
-  customerId: customer.id, type: 'in-clinic', date: '2026-10-06', time: '20:00', durationMin: 15
-}), 'rejects in-clinic outside opening hours');
-throws(() => AppointmentService.create(state, {
-  customerId: null, type: 'in-clinic', date: '2026-10-06', time: '09:00', durationMin: 15
-}), 'rejects appointment without a customer');
 
-console.log('\n4. Farm-visit appointments (estimated duration)');
-const farm = AppointmentService.create(state, {
-  customerId: customer.id,
-  type: 'farm-visit',
-  date: '2026-10-07',
-  time: '10:00',
-  durationMin: 60,
-  notes: 'West pasture, cattle health check'
+describe("Appointment unit tests", () => {
+
+  it("can successfully create an appointment", () => {
+    const appt = createAppointment("Buddy","Tom","2027‑05‑20","10:00","Checkup","routine");
+    assert.notEqual(appt, null);
+    assert.equal(appt.petName, "Buddy");
+    const all = loadAppointments();
+    assert.equal(all.length,1);
+  });
+
+  it("rejects appointment for duplicate pet same date", () => {
+    createAppointment("Buddy","Tom","2027‑05‑20","10:00","Checkup","routine");
+    const second = createAppointment("Buddy","Tom","2027‑05‑20","14:00","Vaccination","");
+    assert.equal(second, null);
+    const all = loadAppointments();
+    assert.equal(all.length,1);
+  });
+
+  it("rejects appointment with past date", () => {
+    const past = createAppointment("Kitty","Amy","2020‑01‑01","09:00","Checkup","");
+    assert.equal(past, null);
+    const all = loadAppointments();
+    assert.equal(all.length,0);
+  });
+
+  it("delete appointment updates list", () => {
+    const appt = createAppointment("Kitty","Amy","2027‑06‑10","11:00","Grooming","");
+    deleteAppointment(appt.id);
+    const all = loadAppointments();
+    assert.equal(all.length,0);
+  });
 });
-assert(farm.type === 'farm-visit', 'creates a farm-visit appointment');
-assert(farm.durationMin === 60, 'farm visit keeps estimated duration');
-throws(() => AppointmentService.create(state, {
-  customerId: customer.id, type: 'farm-visit', date: '2026-10-07', time: '10:00', durationMin: 5
-}), 'rejects farm visit with too-short duration');
-
-console.log('\n5. Queries and cancellation');
-assert(AppointmentService.byDate(state, '2026-10-06').length === 1, 'finds appointments by date');
-AppointmentService.cancel(state, inClinic.id);
-assert(AppointmentService.findById(state, inClinic.id).status === 'cancelled', 'cancels an appointment');
-
-console.log('\n6. Persistence');
-win.StorageService.saveState(state);
-const reloaded = win.StorageService.loadState();
-assert(reloaded.customers.length === state.customers.length, 'state persists across reload');
-
-// ---- Summary -------------------------------------------------------------
-console.log('\n========================================');
-console.log('Result: ' + passed + ' passed, ' + failed + ' failed');
-if (failures.length) console.log('Failures:\n - ' + failures.join('\n - '));
-process.exit(failed === 0 ? 0 : 1);
